@@ -1,4 +1,4 @@
-# Controle
+# Ctrl
 
 Painel pessoal de gestão de banca e resultados. Reúne em um só lugar o registro das entradas, um calendário de resultados por dia e indicadores de desempenho do período.
 
@@ -14,4 +14,4 @@ Projeto desenvolvido por Eduardo Levy com apoio de ferramentas de IA generativa.
 
 ## Acesso
 
-https://eduardollevybr-ux.github.io/controle-eduardolevy/
+https://eduardollevybr-ux.github.io/ctrl/
