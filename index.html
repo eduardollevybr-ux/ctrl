@@ -2060,6 +2060,48 @@ function openNames(kind){
  el.addEventListener("click",e=>{if(e.target.closest("[data-close]")){window.__onUndo=null;closeFull(el);renderTabs();}});
 }
 
+/* ---------- voltar deslizando da borda esquerda (como no iPhone e no Flux) ----------
+   Com uma tela cheia ou uma lista de escolha aberta, arrastar o dedo da borda
+   esquerda para a direita fecha a tela, acompanhando o dedo. */
+const EDGE_W=24;
+function removeLayerNow(t){t.remove();if(!byId("layer")||!byId("layer").children.length)document.documentElement.classList.remove("ov-open");if(window.__onUndo&&t.querySelector&&t.querySelector("#n-list")){window.__onUndo=null;renderTabs();}}
+function backTarget(){
+ const l=byId("layer");if(!l||!l.lastElementChild)return null;const t=l.lastElementChild;if(t.classList.contains("out"))return null;
+ if(t.classList.contains("ovl"))return {el:t.querySelector(".sheet"),wrap:t,go:()=>removeLayerNow(t)};
+ return {el:t,wrap:t,go:()=>removeLayerNow(t)};
+}
+let EDGE=null;
+document.addEventListener("touchstart",e=>{
+ EDGE=null;if(isDesk()||e.touches.length!==1)return;
+ const t=e.touches[0];if(t.clientX>=EDGE_W)return;
+ const bt=backTarget();if(!bt)return;
+ EDGE={...bt,x0:t.clientX,y0:t.clientY,dx:0,axis:null,v:0,lx:t.clientX,lt:performance.now()};
+},{passive:true,capture:true});
+document.addEventListener("touchmove",e=>{
+ if(!EDGE)return;
+ const t=e.touches[0],dx=t.clientX-EDGE.x0,dy=t.clientY-EDGE.y0;
+ if(!EDGE.axis){
+  if(Math.abs(dx)+Math.abs(dy)<8)return;
+  EDGE.axis=dx>0&&Math.abs(dx)>Math.abs(dy)?"x":"y";
+  if(EDGE.axis!=="x"){EDGE=null;return;}
+  EDGE.el.style.animation="none";EDGE.el.style.transition="none";
+ }
+ e.preventDefault();e.stopPropagation();
+ const now=performance.now();EDGE.v=(t.clientX-EDGE.lx)/Math.max(1,now-EDGE.lt);EDGE.lx=t.clientX;EDGE.lt=now;
+ EDGE.dx=Math.max(0,dx);EDGE.el.style.transform=`translate3d(${EDGE.dx}px,0,0)`;
+ if(EDGE.wrap!==EDGE.el)EDGE.wrap.style.opacity=String(Math.max(.2,1-EDGE.dx/innerWidth));
+},{passive:false,capture:true});
+function edgeEnd(){
+ const E=EDGE;EDGE=null;if(!E||E.axis!=="x")return;
+ const w=innerWidth,commit=E.dx>w*.33||(E.v>.35&&E.dx>30);
+ E.el.style.transition="transform .28s cubic-bezier(.2,.85,.25,1)";
+ E.el.style.transform=`translate3d(${commit?w:0}px,0,0)`;
+ if(E.wrap!==E.el){E.wrap.style.transition="opacity .28s ease";E.wrap.style.opacity=commit?"0":"";}
+ setTimeout(()=>{if(commit)E.go();else{E.el.style.transition="";E.el.style.transform="";E.el.style.animation="";if(E.wrap!==E.el){E.wrap.style.transition="";E.wrap.style.opacity="";}}},290);
+}
+document.addEventListener("touchend",edgeEnd,{capture:true});
+document.addEventListener("touchcancel",edgeEnd,{capture:true});
+
 function formatHoraLivre(raw){
   const digits = String(raw||"").replace(/\D/g,"").slice(0,4);
   if(!digits) return "00:00";
