@@ -1,15 +1,14 @@
-/* Service worker do Ctrl | Eduardo Levy
+/* Service worker do Ctrl
    Guarda no aparelho o necessário para o app abrir sem internet.
    - Página (navegação): busca primeiro na internet; se falhar, usa a cópia guardada.
    - Biblioteca do Supabase e ícones: usa a cópia guardada e atualiza por trás.
    - Chamadas para *.supabase.co nunca são guardadas nem interceptadas. */
  
-const CACHE = "controle-v4"; // o prefixo "controle-" fica igual para apagar as cópias antigas
+const CACHE = "controle-v5"; // o prefixo "controle-" fica igual para apagar as cópias antigas
 const SUPABASE_LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 const PRECACHE = [
   "./",
   "./index.html",
-  "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-rounded-192.png",
@@ -105,6 +104,12 @@ self.addEventListener("fetch", (event) => {
   const isFont = url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
   const isOwnAsset = sameOrigin && /\/(manifest\.json|icons\/icon-192\.png|icons\/icon-512\.png|icons\/icon-rounded-192\.png|icons\/icon-rounded-512\.png|index\.html)$/.test(url.pathname);
  
+  // manifesto (nome e ícone do app instalado): sempre o mais novo da internet
+  if(sameOrigin && /\/manifest\.json$/.test(url.pathname)){
+    event.respondWith(fetch(request, { cache: "no-store" }).catch(() => caches.match(request, { ignoreSearch: true })));
+    return;
+  }
+
   if(isLib || isFont || isOwnAsset){
     event.respondWith(staleWhileRevalidate(event));
   }
