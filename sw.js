@@ -1,12 +1,11 @@
-/* Service worker do Controle | Eduardo Levy
+/* Service worker do Ctrl | Eduardo Levy
    Guarda no aparelho o necessário para o app abrir sem internet.
    - Página (navegação): busca primeiro na internet; se falhar, usa a cópia guardada.
-   - Biblioteca do Supabase, fonte e ícones: usa a cópia guardada e atualiza por trás.
+   - Biblioteca do Supabase e ícones: usa a cópia guardada e atualiza por trás.
    - Chamadas para *.supabase.co nunca são guardadas nem interceptadas. */
-
-const CACHE = "controle-v3";
+ 
+const CACHE = "controle-v4"; // o prefixo "controle-" fica igual para apagar as cópias antigas
 const SUPABASE_LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-const FONT_CSS = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -15,11 +14,10 @@ const PRECACHE = [
   "./icons/icon-512.png",
   "./icons/icon-rounded-192.png",
   "./icons/icon-rounded-512.png",
-  SUPABASE_LIB,
-  FONT_CSS
+  SUPABASE_LIB
 ];
 const NAV_TIMEOUT_MS = 5000;
-
+ 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
@@ -33,7 +31,7 @@ self.addEventListener("install", (event) => {
     await self.skipWaiting();
   })());
 });
-
+ 
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
@@ -41,11 +39,11 @@ self.addEventListener("activate", (event) => {
     await self.clients.claim();
   })());
 });
-
+ 
 function isSupabaseApi(url){
   return url.hostname === "supabase.co" || url.hostname.endsWith(".supabase.co");
 }
-
+ 
 async function networkFirstPage(request){
   const cache = await caches.open(CACHE);
   const network = fetch(request).then(async (res) => {
@@ -69,7 +67,7 @@ async function networkFirstPage(request){
     return network;
   }
 }
-
+ 
 async function staleWhileRevalidate(event){
   const request = event.request;
   const cache = await caches.open(CACHE);
@@ -85,28 +83,28 @@ async function staleWhileRevalidate(event){
   const res = await update;
   return res || Response.error();
 }
-
+ 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   if(request.method !== "GET") return;
   let url;
   try{ url = new URL(request.url); }catch(e){ return; }
   if(url.protocol !== "http:" && url.protocol !== "https:") return;
-
+ 
   // dados e login: sempre direto na internet, sem interceptar
   if(isSupabaseApi(url)) return;
-
+ 
   if(request.mode === "navigate"){
     if(url.origin !== self.location.origin) return;
     event.respondWith(networkFirstPage(request));
     return;
   }
-
+ 
   const sameOrigin = url.origin === self.location.origin;
   const isLib = url.hostname === "cdn.jsdelivr.net" && url.pathname.indexOf("/npm/@supabase/") === 0;
   const isFont = url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
   const isOwnAsset = sameOrigin && /\/(manifest\.json|icons\/icon-192\.png|icons\/icon-512\.png|icons\/icon-rounded-192\.png|icons\/icon-rounded-512\.png|index\.html)$/.test(url.pathname);
-
+ 
   if(isLib || isFont || isOwnAsset){
     event.respondWith(staleWhileRevalidate(event));
   }
