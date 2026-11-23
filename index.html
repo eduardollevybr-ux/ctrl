@@ -121,6 +121,11 @@ button.row:active{transform:scale(.98);background-color:var(--s2)}
 .t-yel{background:color-mix(in srgb,var(--yelbg) 75%,transparent);color:var(--yel)}
 .hs{display:flex;gap:8px;padding:12px var(--px) 0;overflow-x:auto;scrollbar-width:none}
 .hs::-webkit-scrollbar{display:none}
+/* filtros de Entradas e Análises: sem rolar para o lado; os blocos dividem a largura da tela */
+.fbar{display:flex;gap:6px;padding:12px var(--px) 0}
+.fbar .pill{flex:1 1 0;min-width:0;padding:0 4px;font-size:clamp(12.5px,3.9vw,15px)}
+.fbar .pill.sq{flex:none;width:38px;padding:0}
+.fbar .pill.sq.on{width:auto;padding:0 10px;gap:4px}
 .empty{padding:48px 32px;text-align:center;color:var(--muted)}
 .badge{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;font-size:13px;font-weight:700;background:var(--s2);color:var(--muted)}
 .badge.up{background:color-mix(in srgb,var(--posbg) 70%,transparent);color:var(--pos)}
@@ -284,6 +289,12 @@ button.row:active{transform:scale(.98);background-color:var(--s2)}
 .fc{display:flex;flex-direction:column;justify-content:center;gap:3px;min-height:66px;padding:8px var(--px);border-bottom:1px solid var(--line2);text-align:left;min-width:0;cursor:pointer;transition:transform .22s var(--spring),background-color .2s}
 .fc.l{border-right:1px solid var(--line2)}
 .fc.fw{grid-column:1/-1}
+/* campo obrigatório que ficou vazio: fica em vermelho até ser preenchido */
+.fc.miss{background:color-mix(in srgb,var(--negbg) 45%,transparent)}
+.fc.miss .fk{color:var(--neg)}
+.fc.miss .fv.ph,.fc.miss .fv::placeholder{color:var(--neg);opacity:.75}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.shake{animation:shake .38s ease}
 button.fc:active{background:var(--s2);transform:scale(.98)}
 .fc.ro{cursor:default}
 .fk{font-size:13px;color:var(--muted)}
@@ -334,8 +345,9 @@ button.fc:active{background:var(--s2);transform:scale(.98)}
 #toast span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .toast-action{height:36px;padding:0 14px;border-radius:999px;font-weight:700;color:var(--acc)!important;flex:none}
 :root[data-theme="light"] .toast-action{color:#A9C6FF!important}
-.net-banner{position:fixed;z-index:96;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translate(-50%,-12px);opacity:0;pointer-events:none;padding:8px 14px;border-radius:999px;background:var(--s3);color:var(--text);font-size:13px;font-weight:600;transition:opacity .25s,transform .35s var(--spring)}
-.net-banner.show{opacity:1;transform:translate(-50%,0)}
+/* lançamento salvo sem internet: nuvem riscada até ser enviado (mesmo padrão do FLUX) */
+.pend{display:inline-flex;vertical-align:-2px;margin-left:6px;color:var(--ic)}
+.pend svg{width:14px;height:14px}
 
 /* ---------- login ---------- */
 .auth-screen{position:fixed;inset:0;z-index:90;background:var(--bg);overflow:hidden;touch-action:none}
@@ -363,6 +375,14 @@ button.fc:active{background:var(--s2);transform:scale(.98)}
 
 /* carregando */
 .loading-screen{max-width:520px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 20px}
+.splash{position:fixed;inset:0;z-index:200;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;gap:14px;transition:opacity .45s ease,visibility .45s}
+.splash.hide{opacity:0;visibility:hidden;pointer-events:none}
+.splash .ball{width:52px;height:52px}
+.sp-t{font-size:46px;font-weight:700;letter-spacing:.02em;line-height:1}
+.splash>*{animation:spIn .8s cubic-bezier(.16,1,.3,1) both}
+.splash>.sp-t{animation-delay:.08s}
+.splash.hide>*{transform:scale(1.04);transition:transform .45s ease}
+@keyframes spIn{from{opacity:0;transform:translateY(12px) scale(.94)}}
 .skel{border-radius:16px;background:linear-gradient(90deg,var(--s2),var(--s3),var(--s2));background-size:200% 100%;animation:sh 1.2s linear infinite}
 @keyframes sh{to{background-position:-200% 0}}
 
@@ -391,6 +411,8 @@ body,.card,.nav,.sheet,.fbox,.dtop,#topTabs,.fadeb{transition:background-color .
  .ttl{font-size:28px}
  .row{background-size:100% 1px}
  .hs{flex-wrap:wrap}
+ .fbar{gap:8px}
+ .fbar .pill{flex:none;padding:0 16px;font-size:15px}
  .bk{max-width:none;gap:24px;padding-top:20px}
  .top-srch{max-width:420px}
  .more{max-width:320px}
@@ -434,6 +456,7 @@ body,.card,.nav,.sheet,.fbox,.dtop,#topTabs,.fadeb{transition:background-color .
 </style>
 </head>
 <body>
+<div id="splash" class="splash" role="img" aria-label="Ctrl"><span class="ball" aria-hidden="true"></span><span class="sp-t">Ctrl</span></div>
 <div id="auth-screen" class="auth-screen" style="display:none;">
   <div class="auth-in">
     <div class="auth-logo"><span class="ball" style="width:30px;height:30px"></span>Ctrl | Eduardo Levy</div>
@@ -453,15 +476,9 @@ body,.card,.nav,.sheet,.fbox,.dtop,#topTabs,.fadeb{transition:background-color .
   </div>
 </div>
 <div id="app" style="display:none;">
-  <div id="loading" class="loading-screen">
-    <div class="skel" style="height:40px;width:40%;margin:4px 0 24px"></div>
-    <div class="skel" style="height:56px;margin-bottom:14px"></div>
-    <div class="skel" style="height:300px;margin-bottom:14px"></div>
-    <div class="skel" style="height:180px"></div>
-  </div>
+  <div id="loading" class="loading-screen"></div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<div class="net-banner" id="net-banner" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -707,14 +724,40 @@ function stateFromCache(c){
   return repairOrphanChecks(Object.assign(defaultState(), c.data));
 }
 
+/* Sem pílula de conexão (mesmo padrão do FLUX): a falta de internet só conta depois de
+   4 segundos (troca rápida de rede é ignorada); o que foi lançado sem internet ganha a
+   nuvem riscada no próprio lançamento até ser enviado; o envio é silencioso. */
+const PEND_KEY = "controle_pending_v1";
+let PENDING = new Set((()=>{ try{ return JSON.parse(window.localStorage.getItem(PEND_KEY)||"[]"); }catch(e){ return []; } })());
+let netOff = !isOnline();
+let netOffT = null;
+const CLOUD_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m2 2 20 20"/><path d="M5.8 5.8A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.3-.2"/><path d="M21.5 16.5A4.5 4.5 0 0 0 17.5 10h-1.8A7 7 0 0 0 10 5.1"/></svg>';
+function savePending(){ try{ window.localStorage.setItem(PEND_KEY, JSON.stringify([...PENDING])); }catch(e){} }
+function offNow(){ return !isOnline() || netOff; }
+function isPending(id){ return PENDING.has(id) && netOff; }
+function pendIco(id){ return isPending(id) ? `<span class="pend" aria-label="salvo no aparelho">${CLOUD_OFF}</span>` : ""; }
+// guarda como pendentes as entradas e análises que mudaram enquanto estava sem internet
+function markChangedPending(){
+  const c = readCache();
+  const prev = (c && c.data) || {};
+  const before = {};
+  (prev.bets||[]).concat(prev.analyses||[]).forEach(x => { if(x && x.id) before[x.id] = JSON.stringify(x); });
+  let n = 0;
+  (state.bets||[]).concat(state.analyses||[]).forEach(x => {
+    if(x && x.id && before[x.id] !== JSON.stringify(x) && !PENDING.has(x.id)){ PENDING.add(x.id); n++; }
+  });
+  if(n) savePending();
+}
+function setNetOff(v){
+  if(netOff === v) return;
+  netOff = v;
+  if(currentUser && state) renderTabs();
+}
 function updateNetBanner(){
-  const el = document.getElementById("net-banner");
-  if(!el) return;
-  let text = "";
-  if(!isOnline()) text = "Sem internet · salvo no aparelho";
-  else if(currentUser && cacheIsDirty()) text = "Sincronizando…";
-  if(text) el.textContent = text;
-  el.classList.toggle("show", !!text);
+  if(!cacheIsDirty() && PENDING.size){
+    PENDING.clear(); savePending();
+    if(currentUser && state) renderTabs();
+  }
 }
 
 async function loadState(){
@@ -838,8 +881,8 @@ function onConnectivityChange(){
     else await pullLatest();
   })();
 }
-window.addEventListener("online", onConnectivityChange);
-window.addEventListener("offline", updateNetBanner);
+window.addEventListener("online", () => { clearTimeout(netOffT); setNetOff(false); onConnectivityChange(); });
+window.addEventListener("offline", () => { clearTimeout(netOffT); netOffT = setTimeout(() => { if(!isOnline()) setNetOff(true); }, 4000); });
 document.addEventListener("visibilitychange", () => {
   if(document.visibilityState === "visible") onConnectivityChange();
 });
@@ -850,6 +893,7 @@ function persist(){
   if(applyingRemote) return; // não reenviar dados que acabaram de chegar de outro aparelho
   lastLocalChangeAt = Date.now();
   showSavePill();
+  if(offNow()) markChangedPending();
   writeCache(state, true); // 1º grava no aparelho (pendente), depois tenta enviar
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => { pushCache(); }, 350);
@@ -1897,7 +1941,8 @@ function renderDashboard(){
 let entradasSearchOpen=false,analisesSearchOpen=false;
 function filterBar(p,date,mand,vis,search){
  const today=todayIso();
- return `<div class="hs"><button class="pill${date&&date!==today?" on":""}" id="${p}-date" type="button">${icon("cal",16)}${date&&date!==today?shortDate(date):"Data"}</button><button class="pill${date===today?" on":""}" id="${p}-today" type="button">Hoje</button><button class="pill${mand?" on":""}" id="${p}-mand" type="button">Mandante</button><button class="pill${vis?" on":""}" id="${p}-vis" type="button">Visitante</button>${date||search?`<button class="pill" id="${p}-clear" type="button">${icon("x",16)}Limpar</button>`:""}</div>`;
+ const dt=date&&date!==today;
+ return `<div class="fbar">${dt?`<button class="pill sq on" id="${p}-clear" type="button" aria-label="Limpar data">${date.slice(8,10)+"/"+date.slice(5,7)}${icon("x",14)}</button>`:`<button class="pill sq" id="${p}-date" type="button" aria-label="Filtrar por data">${icon("cal",18)}</button>`}<button class="pill${date===today?" on":""}" id="${p}-today" type="button">Hoje</button><button class="pill${mand?" on":""}" id="${p}-mand" type="button">Mandante</button><button class="pill${vis?" on":""}" id="${p}-vis" type="button">Visitante</button></div>`;
 }
 function searchBox(p,open,val){return open?`<div class="srch top-srch">${icon("search",18)}<input id="${p}-q" placeholder="Buscar clube" autocomplete="off" aria-label="Buscar clube" value="${escapeHtml(val)}"></div>`:"";}
 
@@ -1916,7 +1961,7 @@ function renderEntradas(){
  else if(D)body=`<div class="card tblw"><table class="tbl"><thead><tr><th>Data</th><th>Jogo</th><th>Placar</th><th>Aposta</th><th class="n">Stake</th><th class="n">Retorno</th><th class="n">Odd</th><th class="n">Resultado</th></tr></thead><tbody>${days.map(d=>`<tr class="dr"><td colspan="7"><span class="lbl">${dayLabel(d)}</span></td><td class="n"><span class="num mut" style="font-size:13px;font-weight:600">${sBRL(groups[d].reduce((a,b)=>a+betCalc(b).profit,0))}</span></td></tr>`+groups[d].map(b=>{const c=betCalc(b);return `<tr class="r" data-id="${b.id}"><td class="num nw">${d?d.slice(8)+"/"+d.slice(5,7):""}</td><td class="b">${escapeHtml(b.home||"")}<span class="vs">x</span>${escapeHtml(b.away||"")}${b.champ?`<span class="sub">${escapeHtml(b.champ)}</span>`:""}</td><td class="num nw">${escapeHtml(b.placar||"")}</td><td class="w">${escapeHtml(b.pick?apostaLabel(b.pick,b.home,b.away):"")}</td><td class="n num">${fmtBRL(Number(b.stake)||0)}</td><td class="n num">${fmtBRL(Number(b.retorno)||0)}</td><td class="n num mut">${c.odd!==null?fmtOdd(c.odd):""}</td><td class="n num"><span class="dot ${dotCls(c.profit)}"></span>${sBRL(c.profit)}</td></tr>`;}).join("")).join("")}</tbody></table></div>`;
  else body=days.map(d=>{const dp=groups[d].reduce((a,b)=>a+betCalc(b).profit,0);return `<div class="sec dh"><p class="lbl">${dayLabel(d)}</p><span class="num mut" style="font-size:13px;font-weight:600">${sBRL(dp)}</span></div><div class="card grp">`+groups[d].map(b=>{const c=betCalc(b);return `<button class="row er" type="button" data-id="${b.id}">
   <span class="l1"><span class="grow rt">${escapeHtml(b.home)} x ${escapeHtml(b.away)}</span><span class="rv num"><span class="dot ${dotCls(c.profit)}"></span>${sBRL(c.profit)}</span></span>
-  <span class="l1"><span class="grow rs">${escapeHtml(b.pick?apostaLabel(b.pick,b.home,b.away):"Sem aposta")}${b.placar?" · "+escapeHtml(b.placar):""}</span><span class="rs num">${c.odd!==null?"odd "+fmtOdd(c.odd):""}</span></span>
+  <span class="l1"><span class="grow rs">${escapeHtml(b.pick?apostaLabel(b.pick,b.home,b.away):"Sem aposta")}${b.placar?" · "+escapeHtml(b.placar):""}${pendIco(b.id)}</span><span class="rs num">${c.odd!==null?"odd "+fmtOdd(c.odd):""}</span></span>
   <span class="rs">${escapeHtml(b.champ||"")}</span></button>`;}).join("")+`</div>`;}).join("");
  el.innerHTML=`
  <div class="top"><h1 class="ttl">Entradas</h1><button class="btn p dsk" id="ent-new" type="button">${icon("plus",18)}Nova entrada</button><button class="ib" id="ent-s" type="button" aria-label="Buscar clube"${entradasSearchOpen?' style="background:var(--pill);color:var(--ic)"':""}>${icon("search",20)}</button></div>
@@ -1927,11 +1972,11 @@ function renderEntradas(){
  byId("ent-new").onclick=()=>openBet(null);
  byId("ent-s").onclick=()=>{entradasSearchOpen=!entradasSearchOpen;if(!entradasSearchOpen)entradasTeamSearch="";renderEntradas();if(entradasSearchOpen)byId("ent-q").focus();};
  if(byId("ent-q"))byId("ent-q").oninput=e=>{entradasTeamSearch=e.target.value;clearTimeout(entradasSearchDebounce);entradasSearchDebounce=setTimeout(renderEntradas,120);};
- byId("ent-date").onclick=()=>pickDate(entradasFilterDate||todayIso(),d=>{entradasFilterDate=d;renderEntradas();},"Filtrar por data");
+ if(byId("ent-date"))byId("ent-date").onclick=()=>pickDate(entradasFilterDate||todayIso(),d=>{entradasFilterDate=d;renderEntradas();},"Filtrar por data");
  byId("ent-today").onclick=()=>{entradasFilterDate=entradasFilterDate===todayIso()?null:todayIso();renderEntradas();};
  byId("ent-mand").onclick=()=>{entradasMandante=!entradasMandante;renderEntradas();};
  byId("ent-vis").onclick=()=>{entradasVisitante=!entradasVisitante;renderEntradas();};
- if(byId("ent-clear"))byId("ent-clear").onclick=()=>{entradasFilterDate=null;entradasTeamSearch="";entradasSearchOpen=false;renderEntradas();};
+ if(byId("ent-clear"))byId("ent-clear").onclick=()=>{entradasFilterDate=null;renderEntradas();};
  byId("ent-list").onclick=e=>{const r=e.target.closest("[data-id]");if(r){const b=state.bets.find(x=>x.id===r.dataset.id);if(b)openBet(b);}};
  });
 }
@@ -1970,6 +2015,9 @@ function formShell(title,saveLbl,edit,delLbl){
 function fixGrid(g){let c=0;[...g.children].forEach(x=>{if(x.classList.contains("fw")){c=0;return;}x.classList.toggle("l",c===0);c=1-c;});}
 function fcell(k,key,v,ph,full){return `<button class="fc${full?" fw":""}" type="button" data-k="${key}"><span class="fk">${k}</span><span class="fv${v?"":" ph"}">${escapeHtml(v||ph)}</span></button>`;}
 function finp(k,id,v,ph,mode,full,ro){return `<label class="fc${full?" fw":""}${ro?" ro":""}"><span class="fk">${k}</span><input class="fv num" id="${id}" inputmode="${mode}" autocomplete="off" placeholder="${ph}" value="${escapeHtml(v)}"${ro?" readonly tabindex=\"-1\"":""}></label>`;}
+// marca em vermelho os campos obrigatórios vazios e balança o botão (vale no celular e no computador)
+function markMiss(el,miss){el.querySelectorAll("#f-grid .fc").forEach(c=>{const inp=c.querySelector("input");const k=c.dataset.k||(inp&&inp.id);c.classList.toggle("miss",miss.includes(k));});}
+function shakeBtn(b){b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");}
 function fshow(k,html,full){return `<div class="fc ro${full?" fw":""}"><span class="fk">${k}</span><span class="fv">${html}</span></div>`;}
 
 /* ---------- nova entrada / editar entrada ---------- */
@@ -1980,7 +2028,7 @@ function openBet(b){
  const el=openFull(formShell(edit?"Editar entrada":"Nova entrada",edit?"Salvar":"Adicionar entrada",edit,"Excluir entrada"));
  const calcNow=()=>betCalc({stake:parseBRL(stakeTxt),retorno:parseBRL(retTxt),oddManual:oddTxt});
  const oddCell=()=>{const c=calcNow();return c.autoOdd?fshow("Odd",`<span class="num">${fmtOdd(c.odd)}</span>`):finp("Odd","f-odd",oddTxt,"0,00","decimal");};
- const resCell=()=>{const c=calcNow();const has=retTxt.trim()!==""||parseBRL(stakeTxt)>0;return fshow("Resultado",has?`<span class="num"><span class="dot ${dotCls(c.profit)}"></span>${sBRL(c.profit)}</span>`:`<span class="mut">Preencha o retorno</span>`);};
+ const resCell=()=>{const c=calcNow();const has=retTxt.trim()!==""||parseBRL(stakeTxt)>0;return fshow("Resultado",has?`<span class="num"><span class="dot ${dotCls(c.profit)}"></span>${sBRL(c.profit)}</span>`:`<span class="mut num">R$ 0,00</span>`);};
  const grid=()=>{const g=el.querySelector("#f-grid");g.innerHTML=
    fcell("Data","date",shortDate(d.date))+fcell("Placar","placar",d.placar)+
    fcell("Campeonato","champ",d.champ,"Escolher",true)+
@@ -1988,10 +2036,12 @@ function openBet(b){
    fcell("Aposta","pick",d.pick?apostaLabel(d.pick,d.home,d.away):"","Escolher",true)+
    finp("Stake","f-stake",stakeTxt,"R$ 0,00","decimal")+finp("Retorno","f-ret",retTxt,"R$ 0,00","decimal")+
    `<div id="f-odd-w" style="display:contents">${oddCell()}</div><div id="f-res-w" style="display:contents">${resCell()}</div>`;
-  fixGrid2(g);bindInputs();};
+  fixGrid2(g);bindInputs();if(tried)markMiss(el,missNow());};
+ let tried=false;
+ const missNow=()=>[!d.home&&"home",!d.away&&"away",!(parseBRL(stakeTxt)>0)&&"f-stake"].filter(Boolean);
  const fixGrid2=g=>{let c=0;g.querySelectorAll(".fc").forEach(x=>{if(x.classList.contains("fw")){c=0;return;}x.classList.toggle("l",c===0);c=1-c;});};
  const refreshCalc=()=>{const g=el.querySelector("#f-grid");const a=document.activeElement&&document.activeElement.id;el.querySelector("#f-odd-w").innerHTML=oddCell();el.querySelector("#f-res-w").innerHTML=resCell();fixGrid2(g);const oi=el.querySelector("#f-odd");if(oi){oi.oninput=e=>{oddTxt=e.target.value;el.querySelector("#f-res-w").innerHTML=resCell();fixGrid2(g);};if(a==="f-odd")oi.focus();}};
- const bindInputs=()=>{el.querySelector("#f-stake").oninput=e=>{stakeTxt=e.target.value;refreshCalc();};el.querySelector("#f-ret").oninput=e=>{retTxt=e.target.value;refreshCalc();};const oi=el.querySelector("#f-odd");if(oi)oi.oninput=e=>{oddTxt=e.target.value;el.querySelector("#f-res-w").innerHTML=resCell();fixGrid2(el.querySelector("#f-grid"));};};
+ const bindInputs=()=>{el.querySelector("#f-stake").oninput=e=>{stakeTxt=e.target.value;refreshCalc();if(tried)markMiss(el,missNow());};el.querySelector("#f-ret").oninput=e=>{retTxt=e.target.value;refreshCalc();};const oi=el.querySelector("#f-odd");if(oi)oi.oninput=e=>{oddTxt=e.target.value;el.querySelector("#f-res-w").innerHTML=resCell();fixGrid2(el.querySelector("#f-grid"));};};
  grid();
  el.querySelector("#f-grid").addEventListener("click",e=>{const r=e.target.closest("[data-k]");if(!r)return;const k=r.dataset.k;
   if(k==="date")pickDate(d.date,v=>{d.date=v;grid();});
@@ -2003,7 +2053,7 @@ function openBet(b){
  el.querySelector("#f-save").onclick=()=>{
   d.stake=parseBRL(stakeTxt);d.retorno=parseBRL(retTxt);
   const c=betCalc(d);d.oddManual=c.autoOdd?(b?b.oddManual||"":""):(oddTxt.trim()===""?"":parseBRL(oddTxt));
-  if(!d.home||!d.away||d.stake<=0){showToast("Preencha Mandante, Visitante e um Stake maior que zero");return;}
+  if(!d.home||!d.away||d.stake<=0){tried=true;markMiss(el,missNow());shakeBtn(el.querySelector("#f-save"));return;}
   const v=validateTeamFields(d);if(!v.ok){showToast(v.msg);return;}
   if(edit){snapshotForUndo();Object.assign(b,d);sortByDateDescInPlace(state.bets);persist();showToast("Entrada salva");}
   else{state.bets.unshift({id:uid(),...d});sortByDateDescInPlace(state.bets);persist();showToast("Entrada adicionada");}
@@ -2028,7 +2078,7 @@ function renderAnalises(){
  let body;
  if(!order.length)body=`<div class="empty">${analisesFilterDate||analisesTeamSearch?"Nenhuma análise encontrada para essa busca.":"Nenhuma análise registrada para hoje em diante."}</div>`;
  else if(D)body=`<div class="card tblw"><table class="tbl"><thead><tr><th>Data</th><th>Jogo</th><th>Superioridade no jogo</th><th>Leitura de mercado</th><th class="n" aria-label="Enviar para Entradas"></th></tr></thead><tbody>${order.map(d=>groups[d].map(r=>`<tr class="r" data-id="${r.id}"><td class="num nw">${d?d.slice(8)+"/"+d.slice(5,7):""}<span class="sub">${escapeHtml(r.hora||"00:00")}</span></td><td class="b">${escapeHtml(r.home||"")}<span class="vs">x</span>${escapeHtml(r.away||"")}${r.champ?`<span class="sub">${escapeHtml(r.champ||"")}</span>`:""}</td><td class="w">${escapeHtml(r.sup?superioridadeLabel(r.sup,r.home,r.away):"")}</td><td>${tag(r)}</td><td class="n">${sendBtn(r)}</td></tr>`).join("")).join("")}</tbody></table></div>`;
- else body=order.map(d=>`<div class="sec dh"><p class="lbl">${dayLabel(d)}</p></div><div class="card grp">`+groups[d].map(r=>`<div class="row ar"><button class="arb" type="button" data-id="${r.id}"><span class="num mut ah">${escapeHtml(r.hora||"00:00")}</span><span class="grow ac"><span class="rt">${escapeHtml(r.home||"")} x ${escapeHtml(r.away||"")}</span><span class="rs">${escapeHtml(r.champ||"")}${r.sup?" · "+escapeHtml(superioridadeLabel(r.sup,r.home,r.away)):""}</span>${r.leitura?`<span>${tag(r)}</span>`:""}</span></button>${sendBtn(r)}</div>`).join("")+`</div>`).join("");
+ else body=order.map(d=>`<div class="sec dh"><p class="lbl">${dayLabel(d)}</p></div><div class="card grp">`+groups[d].map(r=>`<div class="row ar"><button class="arb" type="button" data-id="${r.id}"><span class="num mut ah">${escapeHtml(r.hora||"00:00")}</span><span class="grow ac"><span class="rt">${escapeHtml(r.home||"")} x ${escapeHtml(r.away||"")}</span><span class="rs">${escapeHtml(r.champ||"")}${r.sup?" · "+escapeHtml(superioridadeLabel(r.sup,r.home,r.away)):""}${pendIco(r.id)}</span>${r.leitura?`<span>${tag(r)}</span>`:""}</span></button>${sendBtn(r)}</div>`).join("")+`</div>`).join("");
  el.innerHTML=`
  <div class="top"><h1 class="ttl">Análises</h1><button class="btn p dsk" id="an-new" type="button">${icon("plus",18)}Nova análise</button><button class="ib" id="an-s" type="button" aria-label="Buscar clube"${analisesSearchOpen?' style="background:var(--pill);color:var(--ic)"':""}>${icon("search",20)}</button></div>
  ${searchBox("an",analisesSearchOpen,analisesTeamSearch)}
@@ -2038,11 +2088,11 @@ function renderAnalises(){
  byId("an-new").onclick=()=>openAn(null);
  byId("an-s").onclick=()=>{analisesSearchOpen=!analisesSearchOpen;if(!analisesSearchOpen)analisesTeamSearch="";renderAnalises();if(analisesSearchOpen)byId("an-q").focus();};
  if(byId("an-q"))byId("an-q").oninput=e=>{analisesTeamSearch=e.target.value;clearTimeout(analisesSearchDebounce);analisesSearchDebounce=setTimeout(renderAnalises,120);};
- byId("an-date").onclick=()=>pickDate(analisesFilterDate||today,d=>{analisesFilterDate=d;renderAnalises();},"Filtrar por data");
+ if(byId("an-date"))byId("an-date").onclick=()=>pickDate(analisesFilterDate||today,d=>{analisesFilterDate=d;renderAnalises();},"Filtrar por data");
  byId("an-today").onclick=()=>{analisesFilterDate=analisesFilterDate===today?null:today;renderAnalises();};
  byId("an-mand").onclick=()=>{analisesMandante=!analisesMandante;renderAnalises();};
  byId("an-vis").onclick=()=>{analisesVisitante=!analisesVisitante;renderAnalises();};
- if(byId("an-clear"))byId("an-clear").onclick=()=>{analisesFilterDate=null;analisesTeamSearch="";analisesSearchOpen=false;renderAnalises();};
+ if(byId("an-clear"))byId("an-clear").onclick=()=>{analisesFilterDate=null;renderAnalises();};
  if(byId("an-more"))byId("an-more").onclick=()=>{analisesShowAll=true;renderAnalises();};
  if(byId("an-less"))byId("an-less").onclick=()=>{analisesShowAll=false;renderAnalises();};
  byId("an-list").onclick=e=>{
@@ -2057,6 +2107,7 @@ function renderAnalises(){
 function openAn(r){
  const edit=!!r;
  const d=r?{...r}:{date:analisesFilterDate||todayIso(),hora:"",champ:"",home:"",away:"",sup:"",leitura:""};
+ let tried=false;
  const el=openFull(formShell(edit?"Editar análise":"Nova análise",edit?"Salvar":"Adicionar análise",edit,"Excluir análise"));
  const grid=()=>{const g=el.querySelector("#f-grid");g.innerHTML=
    fcell("Data","date",shortDate(d.date))+finp("Horário","f-hora",d.hora,"00:00","numeric")+
@@ -2064,7 +2115,7 @@ function openAn(r){
    fcell("Mandante","home",d.home,"Escolher")+fcell("Visitante","away",d.away,"Escolher")+
    fcell("Superioridade no jogo","sup",d.sup?superioridadeLabel(d.sup,d.home,d.away):"","Escolher",true)+
    fcell("Leitura de mercado","leitura",d.leitura,"Escolher",true);
-  fixGrid(g);const h=el.querySelector("#f-hora");h.maxLength=5;
+  fixGrid(g);if(tried)markMiss(el,[!d.home&&"home",!d.away&&"away"].filter(Boolean));const h=el.querySelector("#f-hora");h.maxLength=5;
   h.oninput=()=>{let v=h.value.replace(/\D/g,"").slice(0,4);if(v.length>2)v=v.slice(0,2)+":"+v.slice(2);h.value=v;d.hora=v;};};
  grid();
  el.querySelector("#f-grid").addEventListener("click",e=>{const x=e.target.closest("[data-k]");if(!x)return;const k=x.dataset.k;
@@ -2076,7 +2127,7 @@ function openAn(r){
  el.addEventListener("click",e=>{if(e.target.closest("[data-close]"))closeFull(el);});
  el.querySelector("#f-save").onclick=()=>{
   d.hora=formatHoraLivre(d.hora);
-  if(!d.home||!d.away){showToast("Preencha Mandante e Visitante");return;}
+  if(!d.home||!d.away){tried=true;markMiss(el,[!d.home&&"home",!d.away&&"away"].filter(Boolean));shakeBtn(el.querySelector("#f-save"));return;}
   const v=validateTeamFields(d);if(!v.ok){showToast(v.msg);return;}
   if(edit){snapshotForUndo();Object.assign(r,d);showToast("Análise salva");}
   else{state.analyses.unshift({id:uid(),...d,checked:false,linkedBetId:null});showToast("Análise adicionada");}
@@ -2403,7 +2454,19 @@ window.scrollTo(0,0);
   document.head.appendChild(style);
 })();
 
-boot();
+/* abertura no estilo do FLUX: logo + nome no fundo do tema, pelo menos 2 segundos,
+   só quando o app é aberto do zero (voltar do segundo plano não recarrega a página) */
+const SPLASH_MIN = 2000;
+let SPLASH_WAIT = false;
+let SPLASH_T = setTimeout(() => hideSplash(), 12000); // segurança: nunca fica preso na abertura
+function hideSplash(){
+  const falta = SPLASH_MIN - performance.now();
+  if(falta > 0){ if(!SPLASH_WAIT){ SPLASH_WAIT = true; setTimeout(() => { SPLASH_WAIT = false; hideSplash(); }, falta); } return; }
+  clearTimeout(SPLASH_T);
+  const el = document.getElementById("splash"); if(!el || el.classList.contains("hide")) return;
+  el.classList.add("hide"); setTimeout(() => el.remove(), 500);
+}
+boot().finally(hideSplash);
 
 })();
 </script>
