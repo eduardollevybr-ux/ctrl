@@ -4,7 +4,7 @@
    - Biblioteca do Supabase e ícones: usa a cópia guardada e atualiza por trás.
    - Chamadas para *.supabase.co nunca são guardadas nem interceptadas. */
  
-const CACHE = "controle-v5"; // o prefixo "controle-" fica igual para apagar as cópias antigas
+const CACHE = "controle-v6"; // o prefixo "controle-" fica igual para apagar as cópias antigas
 const SUPABASE_LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 const PRECACHE = [
   "./",
