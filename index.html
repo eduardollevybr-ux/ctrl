@@ -536,7 +536,9 @@ div.row.er:active{opacity:.6}
 .cc.t{box-shadow:none!important}
 .cc.t>span{background:var(--text);color:var(--bg);width:26px;height:26px;border-radius:50%;display:grid;place-items:center}
 .cc .ring{position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;box-shadow:inset 0 0 0 1.3px var(--muted)}
-.cd{font-weight:500}
+.cd{font-weight:500;padding-bottom:10px}
+.pcal .cg{row-gap:10px}
+.pg2 .calh{padding-top:4px}
 /* indicadores em linhas */
 .tiles,.pg2 .tiles{gap:0 20px}
 .tile{padding:13px 0;border-bottom:1px solid var(--line);gap:7px}
@@ -566,11 +568,12 @@ div.row.er:active{opacity:.6}
 .mvb .pill{width:100%;height:44px}
 .mvs{padding:16px var(--px) 8px}
 /* barra de baixo */
-.nav{left:0;right:0;transform:none;width:auto;bottom:0;border-radius:0;border:0;border-top:1px solid var(--line);background:var(--bg);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:5px 10px env(safe-area-inset-bottom);gap:0;align-items:center}
-.bn{height:60px;color:var(--muted)}
+.nav{left:0;right:0;transform:none;width:auto;bottom:0;border-radius:0;border:0;border-top:1px solid var(--line);background:var(--bg);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:4px 10px max(4px,calc(env(safe-area-inset-bottom) - 16px));gap:0;align-items:center}
+.bn{height:56px;color:var(--muted)}
+.nw{white-space:nowrap}
 .bn.on,.nav.dragging .bn.hot{color:var(--text)}
 .nav-ind{background:none;top:0;bottom:0}
-.nav-ind::after{content:"";position:absolute;left:50%;bottom:7px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--text)}
+.nav-ind{display:none}
 .nav.dragging .nav-ind{box-shadow:none}
 .bplus{flex:none;position:relative;z-index:1;width:48px;height:48px;margin:0 8px;border-radius:12px;background:var(--text);color:var(--bg);display:grid;place-items:center;transition:transform .22s var(--spring)}
 .bplus:active{transform:scale(.92)}
@@ -2075,7 +2078,7 @@ function renderDashboard(){
  const prevV=segPrev("seg-v"),prevR=segPrev("seg-rk"),fx=dashFx;dashFx=null;
  const s=computeStats(),y=calMonth.getFullYear(),m=calMonth.getMonth(),ms=monthStats(y,m),D=isDesk(),today=todayIso();
  const main=calView==="brl"?sBRL(ms.profit):sPct(ms.pct),side=calView==="brl"?sPct(ms.pct):sBRL(ms.profit);
- const inds=[["Banca inicial",s.inicio,"brl"],["Banca atual",s.atual,"brl",s.mov?`inclui ${s.mov>0?"+":""}${fmtBRL(s.mov)} de depósitos e saques`:""],["Odd média",s.oddMedia,"odd"],["Stake (unidade)",s.stake,"brl"],["L/P (unidades)",s.lucroUnidades,"n2"],["L/P (R$)",s.lucroReais,"brl"],["ROI",s.roi,"pct"],["Taxa de acerto",s.taxaAcerto,"pct",`${s.wins} ${s.wins===1?"ganha":"ganhas"} · ${s.pushes} ${s.pushes===1?"devolvida":"devolvidas"} · ${s.losses} ${s.losses===1?"perdida":"perdidas"}`]];
+ const inds=[["Banca inicial",s.inicio,"brl"],["Banca atual",s.atual,"brl",s.mov?`inclui <span class="nw">${s.mov>0?"+":""}${fmtBRL(s.mov)}</span> de depósitos e saques`:""],["Odd média",s.oddMedia,"odd"],["Stake (unidade)",s.stake,"brl"],["L/P (unidades)",s.lucroUnidades,"n2"],["L/P (R$)",s.lucroReais,"brl"],["ROI",s.roi,"pct"],["Taxa de acerto",s.taxaAcerto,"pct",`<span class="nw">${s.wins} ${s.wins===1?"ganha":"ganhas"}</span> · <span class="nw">${s.pushes} ${s.pushes===1?"devolvida":"devolvidas"}</span> · <span class="nw">${s.losses} ${s.losses===1?"perdida":"perdidas"}</span>`]];
  const first=(new Date(y,m,1).getDay()+6)%7,dim=new Date(y,m+1,0).getDate();
  let cells=DOW.map(d=>`<div class="cd">${D?d:d[0]}</div>`).join("")+"<div></div>".repeat(first);
  for(let d=1;d<=dim;d++){const ds=isoDate(y,m,d);const dayB=state.bets.filter(b=>b.date===ds);const has=dayB.length>0;const anyOpen=dayB.some(isOpenBet),allOpen=has&&dayB.every(isOpenBet);const p=dailyProfit(ds);let c="cc",v="";
@@ -2091,14 +2094,15 @@ function renderDashboard(){
   return `<div class="cbd${x.cur?" cur":""}"><div class="h1">${x.p>0?bar("bottom:0")+lb(`bottom:calc(${hp}% + 5px)`):""}</div><div class="ax"></div><div class="h2">${x.p<0?bar("top:0")+lb(`top:calc(${hp}% + 5px)`):""}</div><span class="mut cm">${x.l}</span></div>`;}).join("");
  const head=`<div class="top"><h1 class="ttl">Painel</h1><div class="pnav"><button id="cal-prev" type="button" aria-label="Mês anterior">${icon("left",18)}</button><span class="msl">${MONTHS[m]}${y!==new Date().getFullYear()?" "+y:""}</span><button id="cal-next" type="button" aria-label="Próximo mês">${icon("right",18)}</button></div></div>`;
  const mainCls=dotCls(ms.profit);const isCur=y===new Date().getFullYear()&&m===new Date().getMonth();
- const result=`<div class="card pres"><div class="ptop"><p class="lbl">Resultado do mês</p><div class="seg" id="seg-v" role="group" aria-label="Ver em"><span class="k"></span><button id="v-brl" type="button" class="${calView==="brl"?"on":""}">R$</button><button id="v-pct" type="button" class="${calView==="pct"?"on":""}">%</button></div></div><span class="pval num ${mainCls}" id="pval"></span><span class="badge num cv ${mainCls}">${side}</span>${s.nOpen?`<p class="emj"><b class="num">${fmtBRL(s.emJogo)}</b> em jogo · ${s.nOpen} ${s.nOpen>1?"entradas em aberto":"entrada em aberto"}</p>`:""}<div class="spk${fx==="vals"||fx==="rank"?" still":""}" id="spk"></div><div class="spcap"><span>Banca no mês</span><span>dia ${isCur?new Date().getDate():dim}</span></div></div>`;
+ const result=`<div class="card pres"><div class="ptop"><p class="lbl">Resultado do mês</p><div class="seg" id="seg-v" role="group" aria-label="Ver em"><span class="k"></span><button id="v-brl" type="button" class="${calView==="brl"?"on":""}">R$</button><button id="v-pct" type="button" class="${calView==="pct"?"on":""}">%</button></div></div><span class="pval num ${mainCls}" id="pval"></span><span class="badge num cv ${mainCls}">${side}</span>${s.nOpen?`<p class="emj"><span class="nw"><b class="num">${fmtBRL(s.emJogo)}</b> em jogo</span> · <span class="nw">${s.nOpen} ${s.nOpen>1?"entradas em aberto":"entrada em aberto"}</span></p>`:""}<div class="spk${fx==="vals"||fx==="rank"?" still":""}" id="spk"></div><div class="spcap"><span>Banca no mês</span><span>dia ${isCur?new Date().getDate():dim}</span></div></div>`;
  const cal=`<div class="card pcal"><div class="cg msl" id="cal-grid">${cells}</div></div>`;
  const tiles=`<div class="tiles">${inds.map((c,i)=>`<div class="card tile"><p class="lbl">${c[0]}</p><span class="num" data-n="${c[1]}" data-f="${c[2]}" data-k="t${i}">${NUMF[c[2]](c[1])}</span>${c[3]?`<span class="sm">${c[3]}</span>`:""}</div>`).join("")}</div>`;
  const rkHead=`<div class="sec"><p class="lbl">Ranking de clubes</p><div class="seg" id="seg-rk"><span class="k"></span><button id="rk-month" type="button" class="${rankingScope==="month"?"on":""}">Mês</button><button id="rk-all" type="button" class="${rankingScope==="all"?"on":""}">Total</button></div></div>`;
  const rkBody=`<div class="rkg"><div><p class="lbl sub">Mais lucrativos</p>${rk(top10,"up")}</div><div><p class="lbl sub">Menos lucrativos</p>${rk(bottom10,"dn")}</div></div>`;
  const chartCard=`<div class="card chw"><p class="lbl">Desempenho mensal</p><div class="chd">${chart}</div></div>`;
- if(D) el.innerHTML=head+`<div class="pg2"><div class="col">${result}${cal}</div><div class="col">${tiles}${chartCard}</div></div>`+rkHead+rkBody;
- else el.innerHTML=head+result+`<div class="dmb">${tiles}</div>`+cal+rkHead+rkBody+`<div class="sec"><p class="lbl">Desempenho mensal</p></div><div class="dmb">${chartCard.replace('<p class="lbl">Desempenho mensal</p>',"")}</div>`;
+ const calHead=`<div class="sec calh"><p class="lbl">Calendário de resultados</p></div>`;
+ if(D) el.innerHTML=head+`<div class="pg2"><div class="col">${result}<div>${calHead}${cal}</div></div><div class="col">${tiles}${chartCard}</div></div>`+rkHead+rkBody;
+ else el.innerHTML=head+result+`<div class="dmb">${tiles}</div>`+calHead+cal+rkHead+rkBody+`<div class="sec"><p class="lbl">Desempenho mensal</p></div><div class="dmb">${chartCard.replace('<p class="lbl">Desempenho mensal</p>',"")}</div>`;
  el.classList.toggle("go",fx!=="vals");
  if(fx==="prev"||fx==="next")el.querySelectorAll(".msl").forEach(x=>x.classList.add(fx==="next"?"slL":"slR"));
  if(fx==="vals")el.querySelectorAll(".cv").forEach(x=>x.classList.add("fl"));
@@ -2170,7 +2174,7 @@ function renderEntradas(){
  else body=days.map(d=>{const dp=groups[d].reduce((a,b)=>a+betCalc(b).profit,0);return `<div class="sec dh"><p class="lbl">${dayLabel(d)}</p><span class="num mut" style="font-size:13px;font-weight:600">${sBRL(dp)}</span></div><div class="card grp">`+groups[d].map(b=>{const c=betCalc(b);return `<div class="row er" role="button" tabindex="0" data-id="${b.id}">
   <span class="l1"><span class="grow rt">${escapeHtml(b.home)} x ${escapeHtml(b.away)}</span>${c.open?`<span class="opn">em aberto</span>`:`<span class="rv num"><span class="dot ${dotCls(c.profit)}"></span>${sBRL(c.profit)}</span>`}</span>
   <span class="l1"><span class="grow rs">${escapeHtml(b.pick?apostaLabel(b.pick,b.home,b.away):"Sem aposta")}${b.placar?" · "+escapeHtml(b.placar):""}${pendIco(b.id)}</span><span class="rs num">${c.odd!==null?"odd "+fmtOdd(c.odd):""}</span></span>
-  <span class="rs">${escapeHtml(b.champ||"")}${c.open?" · stake "+fmtBRL(Number(b.stake)||0):""}</span>${c.open?resBtns():""}</div>`;}).join("")+`</div>`;}).join("");
+  <span class="rs">${escapeHtml(b.champ||"")}${c.open?` · <span class="nw">stake ${fmtBRL(Number(b.stake)||0)}</span>`:""}</span>${c.open?resBtns():""}</div>`;}).join("")+`</div>`;}).join("");
  el.innerHTML=`
  <div class="top"><h1 class="ttl">Entradas</h1><button class="btn p dsk" id="ent-new" type="button">${icon("plus",18)}Nova entrada</button><button class="ib" id="ent-s" type="button" aria-label="Buscar clube"${entradasSearchOpen?' style="background:var(--pill);color:var(--ic)"':""}>${icon("search",20)}</button></div>
  ${searchBox("ent",entradasSearchOpen,entradasTeamSearch)}
